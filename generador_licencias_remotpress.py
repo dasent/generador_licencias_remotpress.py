@@ -26,6 +26,7 @@ if "contadores_usuarios" not in st.session_state:
         if not info.get("admin", False):
             st.session_state["contadores_usuarios"][usuario] = {30: 0, 180: 0, 365: 0}
 
+# ========== LOGIN ==========
 def show_login():
     st.title("🔑 Generador de Licencias REMOTPRESS")
     st.write("**Acceso restringido. Solo usuarios autorizados.**")
@@ -36,12 +37,12 @@ def show_login():
         if usuario in USUARIOS and clave == USUARIOS[usuario]["clave"]:
             st.session_state["autenticado"] = True
             st.session_state["usuario"] = usuario
-            st.experimental_rerun()  # Hacemos un rerun aquí para limpiar la pantalla
         else:
             st.error("Usuario o contraseña incorrectos.")
             st.session_state["autenticado"] = False
             st.session_state["usuario"] = ""
 
+# ========== APP PRINCIPAL ==========
 def main_app():
     usuario = st.session_state["usuario"]
     admin = USUARIOS[usuario].get("admin", False)
@@ -112,7 +113,6 @@ def main_app():
     if st.button("Cerrar sesión"):
         st.session_state["autenticado"] = False
         st.session_state["usuario"] = ""
-        st.experimental_rerun()
 
 # ==== FLUJO PRINCIPAL ====
 if "autenticado" not in st.session_state or not st.session_state["autenticado"]:
