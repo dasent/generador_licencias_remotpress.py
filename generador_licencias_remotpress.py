@@ -2,17 +2,14 @@ import streamlit as st
 import hashlib
 from datetime import datetime, timedelta
 
-# --- Configuración de usuario y clave ---
 USUARIO = "dasent"
 CLAVE = "20171556"
 
-# --- Estado de autenticación ---
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
 
 st.title("🔑 Generador de Licencias REMOTPRESS")
 
-# --- Si no está autenticado, muestra el login ---
 if not st.session_state["autenticado"]:
     st.write("**Acceso restringido. Solo usuarios autorizados.**")
     usuario = st.text_input("Usuario:")
@@ -22,14 +19,11 @@ if not st.session_state["autenticado"]:
     if login:
         if usuario == USUARIO and clave == CLAVE:
             st.session_state["autenticado"] = True
-            st.success("¡Acceso concedido! Pulsa el botón para continuar.")
-            st.button("Entrar al generador")  # Para recargar el flujo
-            st.stop()
+            st.success("¡Acceso concedido! Vuelve a cargar la página si no ves el generador abajo.")
         else:
             st.error("Usuario o contraseña incorrectos.")
     st.stop()
 
-# --- Solo el usuario autenticado ve esta sección ---
 st.success(f"¡Bienvenido, {USUARIO}! Acceso seguro concedido.")
 
 DATE_FORMAT = "%Y-%m-%d"
@@ -56,7 +50,7 @@ if st.button("Generar Licencia"):
         st.code(key, language="none")
         st.info("¡La clave se muestra arriba! Puedes copiarla y compartirla donde la necesites.")
 
-# --- Opcional: Botón para cerrar sesión ---
 if st.button("Cerrar sesión"):
     st.session_state["autenticado"] = False
-    st.experimental_rerun()
+    st.warning("Sesión cerrada. Recarga la página para volver a iniciar sesión.")
+    st.stop()
