@@ -26,7 +26,6 @@ if "contadores_usuarios" not in st.session_state:
         if not info.get("admin", False):
             st.session_state["contadores_usuarios"][usuario] = {30: 0, 180: 0, 365: 0}
 
-# ========== LOGIN ==========
 def show_login():
     st.title("🔑 Generador de Licencias REMOTPRESS")
     st.write("**Acceso restringido. Solo usuarios autorizados.**")
@@ -37,16 +36,12 @@ def show_login():
         if usuario in USUARIOS and clave == USUARIOS[usuario]["clave"]:
             st.session_state["autenticado"] = True
             st.session_state["usuario"] = usuario
-            st.experimental_rerun()
+            st.success("¡Acceso concedido! Ahora puedes generar licencias abajo.")
         else:
             st.error("Usuario o contraseña incorrectos.")
             st.session_state["autenticado"] = False
             st.session_state["usuario"] = ""
-            st.stop()
-    else:
-        st.stop()
 
-# ========== APP PRINCIPAL ==========
 def main_app():
     usuario = st.session_state["usuario"]
     admin = USUARIOS[usuario].get("admin", False)
@@ -73,7 +68,6 @@ def main_app():
                 )
                 st.write("---")
 
-    # GENERADOR DE LICENCIAS
     def generate_license_key(machine_hash, expiry):
         fecha = expiry.replace("-", "")
         secret = "REMOTPRESS2024"
@@ -118,10 +112,11 @@ def main_app():
     if st.button("Cerrar sesión"):
         st.session_state["autenticado"] = False
         st.session_state["usuario"] = ""
-        st.experimental_rerun()
 
-# ========== LÓGICA PRINCIPAL ==========
+# ==== FLUJO PRINCIPAL ====
 if "autenticado" not in st.session_state or not st.session_state["autenticado"]:
     show_login()
+    if st.session_state.get("autenticado", False):
+        main_app()
 else:
     main_app()
