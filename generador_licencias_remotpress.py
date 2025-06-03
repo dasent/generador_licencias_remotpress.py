@@ -2,9 +2,7 @@ import streamlit as st
 import hashlib
 from datetime import datetime, timedelta
 
-# =========================
-# 1. USUARIOS Y CLAVES
-# =========================
+# ========= USUARIOS Y CLAVES =========
 USUARIOS = {
     "dasent": {
         "clave": "20171556",
@@ -21,19 +19,14 @@ USUARIOS = {
     }
 }
 
-# =========================
-# 2. INICIALIZACIÓN DE CONTADORES
-# =========================
+# ========= INICIALIZACIÓN DE CONTADORES =========
 if "contadores_usuarios" not in st.session_state:
-    # Solo usuarios limitados llevan contador, el admin no necesita
     st.session_state["contadores_usuarios"] = {}
     for usuario, info in USUARIOS.items():
         if not info.get("admin", False):
             st.session_state["contadores_usuarios"][usuario] = {30: 0, 180: 0, 365: 0}
 
-# =========================
-# 3. FUNCIÓN DE LOGIN
-# =========================
+# ========= FUNCIÓN DE LOGIN =========
 def login():
     st.title("🔑 Generador de Licencias REMOTPRESS")
     st.write("**Acceso restringido. Solo usuarios autorizados.**")
@@ -45,18 +38,15 @@ def login():
             st.session_state["autenticado"] = True
             st.session_state["usuario"] = usuario
             st.success("¡Acceso concedido! Cargando el generador...")
-            st.experimental_rerun()   # SOLO aquí
-            return                   # IMPORTANTE: salir para evitar st.stop()
+            st.experimental_rerun()
+            return  # Sale aquí para evitar continuar después del rerun
         else:
             st.error("Usuario o contraseña incorrectos.")
             st.session_state["autenticado"] = False
             st.session_state["usuario"] = ""
-    if not st.session_state.get("autenticado", False):
-        st.stop()   # SOLO cuando no se ha autenticado (y no hay rerun)
+    st.stop()  # Si no se autenticó, detiene aquí
 
-# =========================
-# 4. FUNCIÓN PRINCIPAL
-# =========================
+# ========= FUNCIÓN PRINCIPAL =========
 def main_app():
     usuario = st.session_state["usuario"]
     admin = USUARIOS[usuario].get("admin", False)
@@ -64,9 +54,7 @@ def main_app():
     st.success(f"¡Bienvenido, {usuario}! Acceso seguro concedido.")
     st.write("Genera licencias para RemotPress fácil, desde tu teléfono o PC.")
 
-    # =================
-    # VER ESTADO DE USUARIOS (SOLO ADMIN)
-    # =================
+    # ====== ADMIN VE CONTADORES ======
     if admin:
         st.markdown("### Estado de licencias de los usuarios limitados")
         for user, data in USUARIOS.items():
@@ -85,9 +73,7 @@ def main_app():
                 )
                 st.write("---")
 
-    # =================
-    # GENERADOR DE LICENCIAS
-    # =================
+    # ====== GENERADOR DE LICENCIAS ======
     def generate_license_key(machine_hash, expiry):
         fecha = expiry.replace("-", "")
         secret = "REMOTPRESS2024"
@@ -103,14 +89,12 @@ def main_app():
             st.warning("Debes ingresar el código de instalación.")
         else:
             if admin:
-                # Admin sin límite
                 fecha_expira = (datetime.now() + timedelta(days=int(dias))).strftime("%Y-%m-%d")
                 key = generate_license_key(machine_hash.strip().upper(), fecha_expira)
                 st.success(f"=== LICENCIA GENERADA ===\n\nKEY:    {key}\nExpira: {fecha_expira}")
                 st.code(key, language="none")
                 st.info("¡La clave se muestra arriba! Puedes copiarla y compartirla donde la necesites.")
             else:
-                # Usuario limitado
                 limites = USUARIOS[usuario]["limites"]
                 usados = st.session_state["contadores_usuarios"][usuario]
                 dias_seleccionados = int(dias)
@@ -124,7 +108,6 @@ def main_app():
                     st.success(f"=== LICENCIA GENERADA ===\n\nKEY:    {key}\nExpira: {fecha_expira}")
                     st.code(key, language="none")
                     st.info("¡La clave se muestra arriba! Puedes copiarla y compartirla donde la necesites.")
-                    # Suma al contador
                     st.session_state["contadores_usuarios"][usuario][dias_seleccionados] += 1
                     st.info(
                         f"Llevas {st.session_state['contadores_usuarios'][usuario][30]}/30 de 30 días, "
@@ -137,9 +120,7 @@ def main_app():
         st.session_state["usuario"] = ""
         st.experimental_rerun()
 
-# =========================
-# 5. CONTROL DE SESIÓN
-# =========================
+# ========= CONTROL DE SESIÓN Y EJECUCIÓN =========
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
 
