@@ -3,7 +3,7 @@ import hashlib
 from datetime import datetime, timedelta
 
 # =========================
-# 1. Definición de usuarios
+# 1. USUARIOS Y CLAVES
 # =========================
 USUARIOS = {
     "dasent": {
@@ -21,18 +21,18 @@ USUARIOS = {
     }
 }
 
-DATE_FORMAT = "%Y-%m-%d"
-
 # =========================
-# 2. Inicializar contadores globales
+# 2. INICIALIZACIÓN DE CONTADORES
 # =========================
 if "contadores_usuarios" not in st.session_state:
-    st.session_state["contadores_usuarios"] = {
-        "tcnomatic": {30: 0, 180: 0, 365: 0}
-    }
+    # Solo usuarios limitados llevan contador, el admin no necesita
+    st.session_state["contadores_usuarios"] = {}
+    for usuario, info in USUARIOS.items():
+        if not info.get("admin", False):
+            st.session_state["contadores_usuarios"][usuario] = {30: 0, 180: 0, 365: 0}
 
 # =========================
-# 3. Pantalla de Login
+# 3. FUNCIÓN DE LOGIN
 # =========================
 def login():
     st.title("🔑 Generador de Licencias REMOTPRESS")
@@ -45,12 +45,16 @@ def login():
             st.session_state["autenticado"] = True
             st.session_state["usuario"] = usuario
             st.success("¡Acceso concedido! Recarga la página si no ves el generador abajo.")
+            st.experimental_rerun()
         else:
             st.error("Usuario o contraseña incorrectos.")
-    st.stop()
+            st.session_state["autenticado"] = False
+            st.session_state["usuario"] = ""
+    if not st.session_state.get("autenticado", False):
+        st.stop()
 
 # =========================
-# 4. Pantalla Principal
+# 4. FUNCIÓN PRINCIPAL
 # =========================
 def main_app():
     usuario = st.session_state["usuario"]
@@ -59,7 +63,9 @@ def main_app():
     st.success(f"¡Bienvenido, {usuario}! Acceso seguro concedido.")
     st.write("Genera licencias para RemotPress fácil, desde tu teléfono o PC.")
 
-    # Mostrar tabla de consumos para admin
+    # =================
+    # VER ESTADO DE USUARIOS (SOLO ADMIN)
+    # =================
     if admin:
         st.markdown("### Estado de licencias de los usuarios limitados")
         for user, data in USUARIOS.items():
@@ -78,7 +84,9 @@ def main_app():
                 )
                 st.write("---")
 
-    # Generador de licencias
+    # =================
+    # GENERADOR DE LICENCIAS
+    # =================
     def generate_license_key(machine_hash, expiry):
         fecha = expiry.replace("-", "")
         secret = "REMOTPRESS2024"
@@ -95,7 +103,7 @@ def main_app():
         else:
             if admin:
                 # Admin sin límite
-                fecha_expira = (datetime.now() + timedelta(days=int(dias))).strftime(DATE_FORMAT)
+                fecha_expira = (datetime.now() + timedelta(days=int(dias))).strftime("%Y-%m-%d")
                 key = generate_license_key(machine_hash.strip().upper(), fecha_expira)
                 st.success(f"=== LICENCIA GENERADA ===\n\nKEY:    {key}\nExpira: {fecha_expira}")
                 st.code(key, language="none")
@@ -110,7 +118,7 @@ def main_app():
                 elif usados[dias_seleccionados] >= limites[dias_seleccionados]:
                     st.error(f"Ya alcanzaste el límite de {limites[dias_seleccionados]} licencias de {dias_seleccionados} días.")
                 else:
-                    fecha_expira = (datetime.now() + timedelta(days=dias_seleccionados)).strftime(DATE_FORMAT)
+                    fecha_expira = (datetime.now() + timedelta(days=dias_seleccionados)).strftime("%Y-%m-%d")
                     key = generate_license_key(machine_hash.strip().upper(), fecha_expira)
                     st.success(f"=== LICENCIA GENERADA ===\n\nKEY:    {key}\nExpira: {fecha_expira}")
                     st.code(key, language="none")
@@ -126,11 +134,10 @@ def main_app():
     if st.button("Cerrar sesión"):
         st.session_state["autenticado"] = False
         st.session_state["usuario"] = ""
-        st.warning("Sesión cerrada. Recarga la página para volver a iniciar sesión.")
-        st.stop()
+        st.experimental_rerun()
 
 # =========================
-# 5. Control de sesión
+# 5. CONTROL DE SESIÓN
 # =========================
 if "autenticado" not in st.session_state:
     st.session_state["autenticado"] = False
