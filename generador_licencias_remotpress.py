@@ -29,14 +29,14 @@ if "contadores_usuarios" not in st.session_state:
 def show_login():
     st.title("🔑 Generador de Licencias REMOTPRESS")
     st.write("**Acceso restringido. Solo usuarios autorizados.**")
-    usuario = st.text_input("Usuario:")
-    clave = st.text_input("Contraseña:", type="password")
-    login_btn = st.button("Iniciar sesión")
+    usuario = st.text_input("Usuario:", key="usuario_login")
+    clave = st.text_input("Contraseña:", type="password", key="clave_login")
+    login_btn = st.button("Iniciar sesión", key="btn_login")
     if login_btn:
         if usuario in USUARIOS and clave == USUARIOS[usuario]["clave"]:
             st.session_state["autenticado"] = True
             st.session_state["usuario"] = usuario
-            st.success("¡Acceso concedido! Ahora puedes generar licencias abajo.")
+            st.experimental_rerun()  # Hacemos un rerun aquí para limpiar la pantalla
         else:
             st.error("Usuario o contraseña incorrectos.")
             st.session_state["autenticado"] = False
@@ -112,11 +112,10 @@ def main_app():
     if st.button("Cerrar sesión"):
         st.session_state["autenticado"] = False
         st.session_state["usuario"] = ""
+        st.experimental_rerun()
 
 # ==== FLUJO PRINCIPAL ====
 if "autenticado" not in st.session_state or not st.session_state["autenticado"]:
     show_login()
-    if st.session_state.get("autenticado", False):
-        main_app()
 else:
     main_app()
