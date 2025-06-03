@@ -2,24 +2,35 @@ import streamlit as st
 import hashlib
 from datetime import datetime, timedelta
 
-# --- Autenticación básica ---
+# --- Configuración de usuario y clave ---
 USUARIO = "dasent"
 CLAVE = "20171556"
 
+# --- Estado de autenticación ---
+if "autenticado" not in st.session_state:
+    st.session_state["autenticado"] = False
+
 st.title("🔑 Generador de Licencias REMOTPRESS")
 
-st.write("**Acceso restringido. Solo usuarios autorizados.**")
+# --- Si no está autenticado, muestra el login ---
+if not st.session_state["autenticado"]:
+    st.write("**Acceso restringido. Solo usuarios autorizados.**")
+    usuario = st.text_input("Usuario:")
+    clave = st.text_input("Contraseña:", type="password")
+    login = st.button("Iniciar sesión")
 
-usuario = st.text_input("Usuario:")
-clave = st.text_input("Contraseña:", type="password")
-
-if usuario != USUARIO or clave != CLAVE:
-    st.warning("Debes ingresar un usuario y contraseña válidos para acceder.")
+    if login:
+        if usuario == USUARIO and clave == CLAVE:
+            st.session_state["autenticado"] = True
+            st.success("¡Acceso concedido! Ahora puedes generar licencias.")
+            st.experimental_rerun()  # Reinicia la app y entra directo a la sección segura
+        else:
+            st.error("Usuario o contraseña incorrectos.")
     st.stop()
 
-st.success("¡Acceso concedido!")
+# --- Solo el usuario autenticado ve esta sección ---
+st.success(f"¡Bienvenido, {USUARIO}! Acceso seguro concedido.")
 
-# --- Generador de licencias ---
 DATE_FORMAT = "%Y-%m-%d"
 
 def generate_license_key(machine_hash, expiry):
@@ -43,3 +54,8 @@ if st.button("Generar Licencia"):
         st.success(f"=== LICENCIA GENERADA ===\n\nKEY:    {key}\nExpira: {fecha_expira}")
         st.code(key, language="none")
         st.info("¡La clave se muestra arriba! Puedes copiarla y compartirla donde la necesites.")
+
+# --- Opcional: Botón para cerrar sesión ---
+if st.button("Cerrar sesión"):
+    st.session_state["autenticado"] = False
+    st.experimental_rerun()
