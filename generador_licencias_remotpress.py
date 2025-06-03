@@ -2,6 +2,24 @@ import streamlit as st
 import hashlib
 from datetime import datetime, timedelta
 
+# --- Autenticación básica ---
+USUARIO = "dasent"
+CLAVE = "20171556"
+
+st.title("🔑 Generador de Licencias REMOTPRESS")
+
+st.write("**Acceso restringido. Solo usuarios autorizados.**")
+
+usuario = st.text_input("Usuario:")
+clave = st.text_input("Contraseña:", type="password")
+
+if usuario != USUARIO or clave != CLAVE:
+    st.warning("Debes ingresar un usuario y contraseña válidos para acceder.")
+    st.stop()
+
+st.success("¡Acceso concedido!")
+
+# --- Generador de licencias ---
 DATE_FORMAT = "%Y-%m-%d"
 
 def generate_license_key(machine_hash, expiry):
@@ -11,7 +29,6 @@ def generate_license_key(machine_hash, expiry):
     key_hash = hashlib.sha256(raw.encode()).hexdigest().upper()
     return f"REMOT-{fecha}-{key_hash}"
 
-st.title("🔑 Generador de Licencias REMOTPRESS")
 st.write("Genera licencias para RemotPress fácil, desde tu teléfono o PC.")
 
 machine_hash = st.text_input("Código de instalación (hash):")
