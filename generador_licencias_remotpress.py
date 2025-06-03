@@ -2,7 +2,7 @@ import streamlit as st
 import hashlib
 from datetime import datetime, timedelta
 
-# ========= USUARIOS Y CLAVES =========
+# ========== USUARIOS Y CLAVES ==========
 USUARIOS = {
     "dasent": {
         "clave": "20171556",
@@ -19,15 +19,15 @@ USUARIOS = {
     }
 }
 
-# ========= INICIALIZACIÓN DE CONTADORES =========
+# ========== CONTADORES ==========
 if "contadores_usuarios" not in st.session_state:
     st.session_state["contadores_usuarios"] = {}
     for usuario, info in USUARIOS.items():
         if not info.get("admin", False):
             st.session_state["contadores_usuarios"][usuario] = {30: 0, 180: 0, 365: 0}
 
-# ========= FUNCIÓN DE LOGIN =========
-def login():
+# ========== LOGIN ==========
+def show_login():
     st.title("🔑 Generador de Licencias REMOTPRESS")
     st.write("**Acceso restringido. Solo usuarios autorizados.**")
     usuario = st.text_input("Usuario:")
@@ -37,16 +37,16 @@ def login():
         if usuario in USUARIOS and clave == USUARIOS[usuario]["clave"]:
             st.session_state["autenticado"] = True
             st.session_state["usuario"] = usuario
-            st.success("¡Acceso concedido! Cargando el generador...")
             st.experimental_rerun()
-            return  # Sale aquí para evitar continuar después del rerun
         else:
             st.error("Usuario o contraseña incorrectos.")
             st.session_state["autenticado"] = False
             st.session_state["usuario"] = ""
-    st.stop()  # Si no se autenticó, detiene aquí
+            st.stop()
+    else:
+        st.stop()
 
-# ========= FUNCIÓN PRINCIPAL =========
+# ========== APP PRINCIPAL ==========
 def main_app():
     usuario = st.session_state["usuario"]
     admin = USUARIOS[usuario].get("admin", False)
@@ -54,7 +54,7 @@ def main_app():
     st.success(f"¡Bienvenido, {usuario}! Acceso seguro concedido.")
     st.write("Genera licencias para RemotPress fácil, desde tu teléfono o PC.")
 
-    # ====== ADMIN VE CONTADORES ======
+    # ADMIN VE CONTADORES
     if admin:
         st.markdown("### Estado de licencias de los usuarios limitados")
         for user, data in USUARIOS.items():
@@ -73,7 +73,7 @@ def main_app():
                 )
                 st.write("---")
 
-    # ====== GENERADOR DE LICENCIAS ======
+    # GENERADOR DE LICENCIAS
     def generate_license_key(machine_hash, expiry):
         fecha = expiry.replace("-", "")
         secret = "REMOTPRESS2024"
@@ -120,11 +120,8 @@ def main_app():
         st.session_state["usuario"] = ""
         st.experimental_rerun()
 
-# ========= CONTROL DE SESIÓN Y EJECUCIÓN =========
-if "autenticado" not in st.session_state:
-    st.session_state["autenticado"] = False
-
-if not st.session_state["autenticado"]:
-    login()
+# ========== LÓGICA PRINCIPAL ==========
+if "autenticado" not in st.session_state or not st.session_state["autenticado"]:
+    show_login()
 else:
     main_app()
