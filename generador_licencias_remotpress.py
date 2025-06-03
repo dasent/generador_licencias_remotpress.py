@@ -44,14 +44,15 @@ def login():
         if usuario in USUARIOS and clave == USUARIOS[usuario]["clave"]:
             st.session_state["autenticado"] = True
             st.session_state["usuario"] = usuario
-            st.success("¡Acceso concedido! Recarga la página si no ves el generador abajo.")
-            st.experimental_rerun()
+            st.success("¡Acceso concedido! Cargando el generador...")
+            st.experimental_rerun()   # SOLO aquí
+            return                   # IMPORTANTE: salir para evitar st.stop()
         else:
             st.error("Usuario o contraseña incorrectos.")
             st.session_state["autenticado"] = False
             st.session_state["usuario"] = ""
     if not st.session_state.get("autenticado", False):
-        st.stop()
+        st.stop()   # SOLO cuando no se ha autenticado (y no hay rerun)
 
 # =========================
 # 4. FUNCIÓN PRINCIPAL
