@@ -22,8 +22,9 @@ if not st.session_state["autenticado"]:
     if login:
         if usuario == USUARIO and clave == CLAVE:
             st.session_state["autenticado"] = True
-            st.success("¡Acceso concedido! Ahora puedes generar licencias.")
-            st.experimental_rerun()  # Reinicia la app y entra directo a la sección segura
+            st.success("¡Acceso concedido! Pulsa el botón para continuar.")
+            st.button("Entrar al generador")  # Para recargar el flujo
+            st.stop()
         else:
             st.error("Usuario o contraseña incorrectos.")
     st.stop()
